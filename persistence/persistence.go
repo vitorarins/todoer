@@ -8,6 +8,7 @@ import (
 var (
 	ErrTodoListNotFound = errors.New("todo list not found")
 	ErrTodoNotFound     = errors.New("todo not found")
+	ErrEmptyTodoList    = errors.New("todo list is empty")
 )
 
 type TodoList struct {
