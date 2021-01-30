@@ -3,34 +3,28 @@ package todolist
 import (
 	"errors"
 
-	"github.com/vitorarins/todoer/todo"
+	"github.com/vitorarins/todoer/persistence"
 )
 
 var (
 	ErrEmptyTitle = errors.New("list title is required")
 )
 
-type TodoList struct {
-	ID    uint32      `json:"id"`
-	Title string      `json:"title"`
-	Todos []todo.Todo `json:"todos"`
-}
-
-func Create(todoList TodoList) error {
+func Create(todoList persistence.TodoList) error {
 	if todoList.Title == "" {
 		return ErrEmptyTitle
 	}
 	return nil
 }
 
-func GetById(id uint32) (*TodoList, error) {
+func GetById(id uint32) (*persistence.TodoList, error) {
 	return nil, nil
 }
 
-func (tl *TodoList) Update(newTodoList *TodoList) error {
+func Update(newTodoList *persistence.TodoList) error {
 	return nil
 }
 
-func (tl *TodoList) Delete() error {
+func Delete(todoList *persistence.TodoList) error {
 	return nil
 }

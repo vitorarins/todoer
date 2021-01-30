@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/vitorarins/todoer/persistence"
 )
 
 func TestCreate(t *testing.T) {
@@ -43,7 +45,7 @@ func TestCreate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			todo := Todo{
+			todo := persistence.Todo{
 				ListID:      test.listID,
 				Description: test.description,
 				Comments:    test.comments,
