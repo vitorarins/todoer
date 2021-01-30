@@ -34,11 +34,21 @@ func (ls *LocalStorage) InsertTodo(todo Todo) error {
 }
 
 func (ls *LocalStorage) GetTodoListByID(id uint32) (*TodoList, error) {
-	return nil, nil
+	todoList, ok := ls.TodoListTable[id]
+	if !ok {
+		return nil, ErrTodoListNotFound
+	}
+
+	return &todoList, nil
 }
 
 func (ls *LocalStorage) GetTodoByID(id uint32) (*Todo, error) {
-	return nil, nil
+	todo, ok := ls.TodoTable[id]
+	if !ok {
+		return nil, ErrTodoNotFound
+	}
+
+	return &todo, nil
 }
 
 func (ls *LocalStorage) GetTodosByListID(listID uint32) ([]Todo, error) {
