@@ -19,12 +19,55 @@ func NewLocalStorage() *LocalStorage {
 	}
 }
 
+// TodoList
+
 func (ls *LocalStorage) InsertTodoList(todoList TodoList) (*TodoList, error) {
 	todoList.ID = ls.TodoListAutoincrement
 	ls.TodoListTable[ls.TodoListAutoincrement] = todoList
 	ls.TodoListAutoincrement++
 	return &todoList, nil
 }
+
+func (ls *LocalStorage) GetAllTodoLists() ([]TodoList, error) {
+	result := []TodoList{}
+	if len(ls.TodoListTable) <= 0 {
+		return result, ErrEmptyTodoListTable
+	}
+	for _, todoList := range ls.TodoListTable {
+		result = append(result, todoList)
+	}
+
+	return result, nil
+}
+
+func (ls *LocalStorage) GetTodoListByID(id uint32) (*TodoList, error) {
+	todoList, ok := ls.TodoListTable[id]
+	if !ok {
+		return nil, ErrTodoListNotFound
+	}
+
+	return &todoList, nil
+}
+
+func (ls *LocalStorage) UpdateTodoList(todoList TodoList) error {
+	if _, ok := ls.TodoListTable[todoList.ID]; !ok {
+		return ErrTodoListNotFound
+	}
+
+	ls.TodoListTable[todoList.ID] = todoList
+	return nil
+}
+
+func (ls *LocalStorage) DeleteTodoList(todoList TodoList) error {
+	if _, ok := ls.TodoListTable[todoList.ID]; !ok {
+		return ErrTodoListNotFound
+	}
+
+	delete(ls.TodoListTable, todoList.ID)
+	return nil
+}
+
+// Todo
 
 func (ls *LocalStorage) InsertTodo(todo Todo) (*Todo, error) {
 	if _, ok := ls.TodoListTable[todo.ListID]; !ok {
@@ -35,15 +78,6 @@ func (ls *LocalStorage) InsertTodo(todo Todo) (*Todo, error) {
 	ls.TodoTable[ls.TodoAutoincrement] = todo
 	ls.TodoAutoincrement++
 	return &todo, nil
-}
-
-func (ls *LocalStorage) GetTodoListByID(id uint32) (*TodoList, error) {
-	todoList, ok := ls.TodoListTable[id]
-	if !ok {
-		return nil, ErrTodoListNotFound
-	}
-
-	return &todoList, nil
 }
 
 func (ls *LocalStorage) GetTodoByID(id uint32) (*Todo, error) {
@@ -59,12 +93,13 @@ func (ls *LocalStorage) GetTodosByListID(listID uint32) ([]Todo, error) {
 	if _, ok := ls.TodoListTable[listID]; !ok {
 		return nil, ErrTodoListNotFound
 	}
-	todoIDs, ok := ls.TodoListRelationship[listID]
-	if !ok {
-		return nil, ErrEmptyTodoList
-	}
 
 	todos := []Todo{}
+	todoIDs, ok := ls.TodoListRelationship[listID]
+	if !ok {
+		return todos, ErrEmptyTodoList
+	}
+
 	for _, id := range todoIDs {
 		todo := ls.TodoTable[id]
 		todos = append(todos, todo)
@@ -73,30 +108,12 @@ func (ls *LocalStorage) GetTodosByListID(listID uint32) ([]Todo, error) {
 	return todos, nil
 }
 
-func (ls *LocalStorage) UpdateTodoList(todoList TodoList) error {
-	if _, ok := ls.TodoListTable[todoList.ID]; !ok {
-		return ErrTodoListNotFound
-	}
-
-	ls.TodoListTable[todoList.ID] = todoList
-	return nil
-}
-
 func (ls *LocalStorage) UpdateTodo(todo Todo) error {
 	if _, ok := ls.TodoTable[todo.ID]; !ok {
 		return ErrTodoNotFound
 	}
 
 	ls.TodoTable[todo.ID] = todo
-	return nil
-}
-
-func (ls *LocalStorage) DeleteTodoList(todoList TodoList) error {
-	if _, ok := ls.TodoListTable[todoList.ID]; !ok {
-		return ErrTodoListNotFound
-	}
-
-	delete(ls.TodoListTable, todoList.ID)
 	return nil
 }
 
