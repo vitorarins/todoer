@@ -1,10 +1,11 @@
-package persistence
+package repository
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 // Tests for TodoList
@@ -12,6 +13,7 @@ import (
 func TestInsertTodoList(t *testing.T) {
 	type Test struct {
 		name                      string
+		todoListToInsert          TodoList
 		todoListTable             map[uint32]TodoList
 		todoListAutoincrement     uint32
 		wantTodoListAutoincrement uint32
@@ -21,13 +23,12 @@ func TestInsertTodoList(t *testing.T) {
 
 	localStorage := NewLocalStorage()
 
-	todoList := TodoList{
-		Title: "Routine",
-	}
-
 	tests := []Test{
 		{
-			name:                      "SuccessInsertRoutine",
+			name: "SuccessInsertRoutine",
+			todoListToInsert: TodoList{
+				Title: "Routine",
+			},
 			todoListTable:             map[uint32]TodoList{},
 			todoListAutoincrement:     0,
 			wantTodoListAutoincrement: 1,
@@ -37,6 +38,15 @@ func TestInsertTodoList(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name:                      "ErrEmptyTitle",
+			todoListToInsert:          TodoList{},
+			todoListTable:             map[uint32]TodoList{},
+			todoListAutoincrement:     0,
+			wantTodoListAutoincrement: 0,
+			want:                      nil,
+			wantErr:                   ErrEmptyTitle,
+		},
 	}
 
 	for _, test := range tests {
@@ -44,14 +54,14 @@ func TestInsertTodoList(t *testing.T) {
 			localStorage.TodoListTable = test.todoListTable
 			localStorage.TodoListAutoincrement = test.todoListAutoincrement
 
-			got, err := localStorage.InsertTodoList(todoList)
+			got, err := localStorage.InsertTodoList(test.todoListToInsert)
 
 			if !errors.Is(err, test.wantErr) {
 				t.Errorf("got error %v; want %v", err, test.wantErr)
 			}
 
 			if diff := cmp.Diff(test.wantTodoListAutoincrement, localStorage.TodoListAutoincrement); diff != "" {
-				t.Errorf("InsertTodoList() mismatch (-want +got):\n%s", diff)
+				t.Errorf("InsertTodoList() mismatch (-wantTodoListAutoincrement +got):\n%s", diff)
 			}
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
@@ -165,12 +175,6 @@ func TestGetAllTodoList(t *testing.T) {
 			},
 			wantErr: nil,
 		},
-		{
-			name:          "SuccessEmptyTodoListTable",
-			todoListTable: map[uint32]TodoList{},
-			want:          []TodoList{},
-			wantErr:       ErrEmptyTodoListTable,
-		},
 	}
 
 	for _, test := range tests {
@@ -183,7 +187,7 @@ func TestGetAllTodoList(t *testing.T) {
 				t.Errorf("got error %v; want %v", err, test.wantErr)
 			}
 
-			if diff := cmp.Diff(test.want, got); diff != "" {
+			if diff := cmp.Diff(test.want, got, cmpopts.SortSlices(todoListLess)); diff != "" {
 				t.Errorf("GetAllTodoLists() mismatch (-want +got):\n%s", diff)
 			}
 		})
@@ -193,6 +197,7 @@ func TestGetAllTodoList(t *testing.T) {
 func TestUpdateTodoList(t *testing.T) {
 	type Test struct {
 		name              string
+		todoListToUpdate  TodoList
 		todoListTable     map[uint32]TodoList
 		wantTodoListTable map[uint32]TodoList
 		wantErr           error
@@ -200,14 +205,13 @@ func TestUpdateTodoList(t *testing.T) {
 
 	localStorage := NewLocalStorage()
 
-	todoList := TodoList{
-		ID:    0,
-		Title: "Routine",
-	}
-
 	tests := []Test{
 		{
 			name: "SuccessUpdateRoutine",
+			todoListToUpdate: TodoList{
+				ID:    0,
+				Title: "Routine",
+			},
 			todoListTable: map[uint32]TodoList{
 				0: TodoList{
 					ID:    0,
@@ -223,10 +227,33 @@ func TestUpdateTodoList(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name:              "ErrUpdateTodoListNotFound",
+			name: "ErrUpdateTodoListNotFound",
+			todoListToUpdate: TodoList{
+				ID:    0,
+				Title: "Routine",
+			},
 			todoListTable:     map[uint32]TodoList{},
 			wantTodoListTable: map[uint32]TodoList{},
 			wantErr:           ErrTodoListNotFound,
+		},
+		{
+			name: "ErrUpdateTodoListEmptyTitle",
+			todoListToUpdate: TodoList{
+				ID: 0,
+			},
+			todoListTable: map[uint32]TodoList{
+				0: TodoList{
+					ID:    0,
+					Title: "Rot",
+				},
+			},
+			wantTodoListTable: map[uint32]TodoList{
+				0: TodoList{
+					ID:    0,
+					Title: "Rot",
+				},
+			},
+			wantErr: ErrEmptyTitle,
 		},
 	}
 
@@ -234,14 +261,14 @@ func TestUpdateTodoList(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			localStorage.TodoListTable = test.todoListTable
 
-			err := localStorage.UpdateTodoList(todoList)
+			err := localStorage.UpdateTodoList(test.todoListToUpdate)
 
 			if !errors.Is(err, test.wantErr) {
 				t.Errorf("got error %v; want %v", err, test.wantErr)
 			}
 
 			if diff := cmp.Diff(test.wantTodoListTable, localStorage.TodoListTable); diff != "" {
-				t.Errorf("UpdateTodoList() mismatch (-want +got):\n%s", diff)
+				t.Errorf("UpdateTodoList() mismatch (-wantTodoListTable +got):\n%s", diff)
 			}
 		})
 	}
@@ -250,6 +277,7 @@ func TestUpdateTodoList(t *testing.T) {
 func TestDeleteTodoList(t *testing.T) {
 	type Test struct {
 		name              string
+		idToDelete        uint32
 		todoListTable     map[uint32]TodoList
 		wantTodoListTable map[uint32]TodoList
 		wantErr           error
@@ -257,14 +285,10 @@ func TestDeleteTodoList(t *testing.T) {
 
 	localStorage := NewLocalStorage()
 
-	todoList := TodoList{
-		ID:    0,
-		Title: "Routine",
-	}
-
 	tests := []Test{
 		{
-			name: "SuccessDeleteRoutine",
+			name:       "SuccessDeleteRoutine",
+			idToDelete: 0,
 			todoListTable: map[uint32]TodoList{
 				0: TodoList{
 					ID:    0,
@@ -276,6 +300,7 @@ func TestDeleteTodoList(t *testing.T) {
 		},
 		{
 			name:              "ErrDeleteTodoListNotFound",
+			idToDelete:        0,
 			todoListTable:     map[uint32]TodoList{},
 			wantTodoListTable: map[uint32]TodoList{},
 			wantErr:           ErrTodoListNotFound,
@@ -286,7 +311,7 @@ func TestDeleteTodoList(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			localStorage.TodoListTable = test.todoListTable
 
-			err := localStorage.DeleteTodoList(todoList)
+			err := localStorage.DeleteTodoListByID(test.idToDelete)
 
 			if !errors.Is(err, test.wantErr) {
 				t.Errorf("got error %v; want %v", err, test.wantErr)
@@ -305,6 +330,7 @@ func TestInsertTodo(t *testing.T) {
 
 	type Test struct {
 		name                  string
+		todoToInsert          Todo
 		todoListTable         map[uint32]TodoList
 		todoAutoincrement     uint32
 		wantTodoAutoincrement uint32
@@ -314,16 +340,15 @@ func TestInsertTodo(t *testing.T) {
 
 	localStorage := NewLocalStorage()
 
-	todo := Todo{
-		ListID:      0,
-		Description: "Make the bed.",
-		Comments:    "",
-		Labels:      []string{"", ""},
-	}
-
 	tests := []Test{
 		{
 			name: "SuccessInsertMakeTheBed",
+			todoToInsert: Todo{
+				ListID:      0,
+				Description: "Make the bed.",
+				Comments:    "",
+				Labels:      []string{"", ""},
+			},
 			todoListTable: map[uint32]TodoList{
 				0: TodoList{},
 			},
@@ -339,12 +364,33 @@ func TestInsertTodo(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name:                  "ErrInsertTodoListNotFound",
+			name: "ErrInsertTodoListNotFound",
+			todoToInsert: Todo{
+				ListID:      0,
+				Description: "Make the bed.",
+				Comments:    "",
+				Labels:      []string{"", ""},
+			},
 			todoListTable:         map[uint32]TodoList{},
 			todoAutoincrement:     0,
 			wantTodoAutoincrement: 0,
 			want:                  nil,
 			wantErr:               ErrTodoListNotFound,
+		},
+		{
+			name: "ErrInsertTodoEmptyDescription",
+			todoToInsert: Todo{
+				ListID:   0,
+				Comments: "",
+				Labels:   []string{"", ""},
+			},
+			todoListTable: map[uint32]TodoList{
+				0: TodoList{},
+			},
+			todoAutoincrement:     0,
+			wantTodoAutoincrement: 0,
+			want:                  nil,
+			wantErr:               ErrEmptyDescription,
 		},
 	}
 
@@ -353,14 +399,14 @@ func TestInsertTodo(t *testing.T) {
 			localStorage.TodoListTable = test.todoListTable
 			localStorage.TodoAutoincrement = test.todoAutoincrement
 
-			got, err := localStorage.InsertTodo(todo)
+			got, err := localStorage.InsertTodo(test.todoToInsert)
 
 			if !errors.Is(err, test.wantErr) {
 				t.Errorf("got error %v; want %v", err, test.wantErr)
 			}
 
 			if diff := cmp.Diff(test.wantTodoAutoincrement, localStorage.TodoAutoincrement); diff != "" {
-				t.Errorf("InsertTodo() mismatch (-want +got):\n%s", diff)
+				t.Errorf("InsertTodo() mismatch (-wantTodoAutoincrement +got):\n%s", diff)
 			}
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
@@ -464,7 +510,7 @@ func TestGetTodosByListID(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "ErrGetEmptyTodoList",
+			name: "SuccessGetEmptyTodoList",
 			todoListTable: map[uint32]TodoList{
 				0: TodoList{
 					ID:    0,
@@ -480,7 +526,7 @@ func TestGetTodosByListID(t *testing.T) {
 			todoListRelationship: map[uint32][]uint32{},
 			listID:               0,
 			want:                 []Todo{},
-			wantErr:              ErrEmptyTodoList,
+			wantErr:              nil,
 		},
 		{
 			name:                 "ErrGetTodoListNotFound",
@@ -515,6 +561,7 @@ func TestGetTodosByListID(t *testing.T) {
 func TestUpdateTodo(t *testing.T) {
 	type Test struct {
 		name          string
+		todoToUpdate  Todo
 		todoTable     map[uint32]Todo
 		wantTodoTable map[uint32]Todo
 		wantErr       error
@@ -522,18 +569,17 @@ func TestUpdateTodo(t *testing.T) {
 
 	localStorage := NewLocalStorage()
 
-	todo := Todo{
-		ID:          0,
-		ListID:      0,
-		Description: "Make the bed.",
-		Comments:    "It was hard",
-		Labels:      []string{"bed", "bedroom"},
-		Done:        true,
-	}
-
 	tests := []Test{
 		{
 			name: "SuccessUpdateMakeTheBed",
+			todoToUpdate: Todo{
+				ID:          0,
+				ListID:      0,
+				Description: "Make the bed.",
+				Comments:    "It was hard",
+				Labels:      []string{"bed", "bedroom"},
+				Done:        true,
+			},
 			todoTable: map[uint32]Todo{
 				0: Todo{
 					ID:          0,
@@ -556,7 +602,44 @@ func TestUpdateTodo(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name:          "ErrUpdateTodoNotFound",
+			name: "ErrUpdateTodoEmptyDescription",
+			todoToUpdate: Todo{
+				ID:       0,
+				ListID:   0,
+				Comments: "It was hard",
+				Labels:   []string{"bed", "bedroom"},
+				Done:     true,
+			},
+			todoTable: map[uint32]Todo{
+				0: Todo{
+					ID:          0,
+					ListID:      0,
+					Description: "Make the",
+					Comments:    "",
+					Labels:      []string{"", ""},
+				},
+			},
+			wantTodoTable: map[uint32]Todo{
+				0: Todo{
+					ID:          0,
+					ListID:      0,
+					Description: "Make the",
+					Comments:    "",
+					Labels:      []string{"", ""},
+				},
+			},
+			wantErr: ErrEmptyDescription,
+		},
+		{
+			name: "ErrUpdateTodoNotFound",
+			todoToUpdate: Todo{
+				ID:          0,
+				ListID:      0,
+				Description: "Make the bed.",
+				Comments:    "It was hard",
+				Labels:      []string{"bed", "bedroom"},
+				Done:        true,
+			},
 			todoTable:     map[uint32]Todo{},
 			wantTodoTable: map[uint32]Todo{},
 			wantErr:       ErrTodoNotFound,
@@ -567,14 +650,14 @@ func TestUpdateTodo(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			localStorage.TodoTable = test.todoTable
 
-			err := localStorage.UpdateTodo(todo)
+			err := localStorage.UpdateTodo(test.todoToUpdate)
 
 			if !errors.Is(err, test.wantErr) {
 				t.Errorf("got error %v; want %v", err, test.wantErr)
 			}
 
 			if diff := cmp.Diff(test.wantTodoTable, localStorage.TodoTable); diff != "" {
-				t.Errorf("UpdateTodo() mismatch (-want +got):\n%s", diff)
+				t.Errorf("UpdateTodo() mismatch (-wantTodoTable +got):\n%s", diff)
 			}
 		})
 	}
@@ -723,4 +806,8 @@ func TestDeleteTodo(t *testing.T) {
 			}
 		})
 	}
+}
+
+func todoListLess(x, y TodoList) bool {
+	return x.ID < y.ID
 }
