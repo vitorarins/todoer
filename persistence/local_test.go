@@ -508,7 +508,6 @@ func TestDeleteTodo(t *testing.T) {
 	type Test struct {
 		name                     string
 		todoTable                map[uint32]Todo
-		todoListTable            map[uint32]TodoList
 		todoListRelationship     map[uint32][]uint32
 		wantTodoTable            map[uint32]Todo
 		wantTodoListRelationship map[uint32][]uint32
@@ -539,12 +538,6 @@ func TestDeleteTodo(t *testing.T) {
 					Done:        true,
 				},
 			},
-			todoListTable: map[uint32]TodoList{
-				0: TodoList{
-					ID:    0,
-					Title: "Routine",
-				},
-			},
 			todoListRelationship: map[uint32][]uint32{
 				0: []uint32{0},
 			},
@@ -555,14 +548,13 @@ func TestDeleteTodo(t *testing.T) {
 		{
 			name:                     "ErrDeleteTodoNotFound",
 			todoTable:                map[uint32]Todo{},
-			todoListTable:            map[uint32]TodoList{},
 			todoListRelationship:     map[uint32][]uint32{},
 			wantTodoTable:            map[uint32]Todo{},
 			wantTodoListRelationship: map[uint32][]uint32{},
 			wantErr:                  ErrTodoNotFound,
 		},
 		{
-			name: "SuccessDeleteTodoListNotFound",
+			name: "SuccessDeleteTodoListRelationshipEmpty",
 			todoTable: map[uint32]Todo{
 				0: Todo{
 					ID:          0,
@@ -573,20 +565,71 @@ func TestDeleteTodo(t *testing.T) {
 					Done:        true,
 				},
 			},
-			todoListTable: map[uint32]TodoList{},
-			todoListRelationship: map[uint32][]uint32{
-				0: []uint32{0},
-			},
+			todoListRelationship:     map[uint32][]uint32{},
 			wantTodoTable:            map[uint32]Todo{},
 			wantTodoListRelationship: map[uint32][]uint32{},
-			wantErr:                  ErrTodoListNotFound,
+			wantErr:                  nil,
+		},
+		{
+			name: "SuccessDeleteTodoListRelationshipEmpty",
+			todoTable: map[uint32]Todo{
+				0: Todo{
+					ID:          0,
+					ListID:      0,
+					Description: "Make the bed.",
+					Comments:    "It was hard",
+					Labels:      []string{"bed", "bedroom"},
+					Done:        true,
+				},
+			},
+			todoListRelationship:     map[uint32][]uint32{},
+			wantTodoTable:            map[uint32]Todo{},
+			wantTodoListRelationship: map[uint32][]uint32{},
+			wantErr:                  nil,
+		},
+		{
+			name: "SuccessDeleteTodoListRelationshipBiggerThanOne",
+			todoTable: map[uint32]Todo{
+				0: Todo{
+					ID:          0,
+					ListID:      0,
+					Description: "Make the bed.",
+					Comments:    "It was hard",
+					Labels:      []string{"bed", "bedroom"},
+					Done:        true,
+				},
+				1: Todo{
+					ID:          1,
+					ListID:      0,
+					Description: "Sweep the floor.",
+					Comments:    "It was ok",
+					Labels:      []string{"bedroom"},
+					Done:        true,
+				},
+			},
+			todoListRelationship: map[uint32][]uint32{
+				0: []uint32{0, 1},
+			},
+			wantTodoTable: map[uint32]Todo{
+				1: Todo{
+					ID:          1,
+					ListID:      0,
+					Description: "Sweep the floor.",
+					Comments:    "It was ok",
+					Labels:      []string{"bedroom"},
+					Done:        true,
+				},
+			},
+			wantTodoListRelationship: map[uint32][]uint32{
+				0: []uint32{1},
+			},
+			wantErr: nil,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			localStorage.TodoTable = test.todoTable
-			localStorage.TodoListTable = test.todoListTable
 			localStorage.TodoListRelationship = test.todoListRelationship
 
 			err := localStorage.DeleteTodo(todo)

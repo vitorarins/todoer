@@ -104,10 +104,27 @@ func (ls *LocalStorage) DeleteTodo(todo Todo) error {
 	if _, ok := ls.TodoTable[todo.ID]; !ok {
 		return ErrTodoNotFound
 	}
-	if _, ok := ls.TodoListTable[todo.ListID]; !ok {
-		return ErrTodoListNotFound
+	delete(ls.TodoTable, todo.ID)
+	// If there is a relationship between the list, delete from there
+	todoListRelationship, ok := ls.TodoListRelationship[todo.ListID]
+	if ok {
+		newRelationship := removeID(todoListRelationship, todo.ID)
+		if len(newRelationship) > 0 {
+			ls.TodoListRelationship[todo.ListID] = newRelationship
+		} else {
+			delete(ls.TodoListRelationship, todo.ListID)
+		}
 	}
 
-	delete(ls.TodoTable, todo.ID)
 	return nil
+}
+
+func removeID(oldTodoIDs []uint32, todoID uint32) []uint32 {
+	newTodoIDs := []uint32{}
+	for _, id := range oldTodoIDs {
+		if id != todoID {
+			newTodoIDs = append(newTodoIDs, id)
+		}
+	}
+	return newTodoIDs
 }
