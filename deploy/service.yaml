@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: todoer
+  namespace: todoer
+spec:
+  selector:
+    deployment: todoer
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: web

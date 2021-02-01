@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todoer
+  namespace: todoer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: todoer
+  template:
+    metadata:
+      labels:
+        deployment: todoer
+    spec:
+      containers:
+      - name: todoer
+        image: eu.gcr.io/matrix-varins-1556713043069/vitorarins/todoer:0.0.1
+        ports:
+        - name: web
+          containerPort: 8080

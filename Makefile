@@ -1,7 +1,7 @@
 goversion=1.15.6
 short_sha=$(shell git rev-parse --short HEAD || echo latest)
 version?=$(short_sha)
-img=vitorarins/todoer:$(version)
+img=eu.gcr.io/matrix-varins-1556713043069/vitorarins/todoer:$(version)
 vols=-v `pwd`:/app -w /app
 run_go=docker run --rm $(vols) golang:$(goversion)
 cov=coverage.out
@@ -35,3 +35,7 @@ publish: image
 .PHONY: build
 build: 
 	go build -o ./cmd/todoer/todoer -ldflags "-X main.VersionString=$(version)" ./cmd/todoer/todoer.go
+
+.PHONY: deploy
+deploy: publish
+	kubectl apply -k deploy
