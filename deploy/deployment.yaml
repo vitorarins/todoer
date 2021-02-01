@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: todoer
-        image: eu.gcr.io/matrix-varins-1556713043069/vitorarins/todoer:0.0.1
+        image: vitorarins/todoer
         ports:
         - name: web
           containerPort: 8080

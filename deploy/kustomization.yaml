@@ -5,3 +5,8 @@ resources:
 - namespace.yaml
 - deployment.yaml
 - service.yaml
+
+images:
+- name: vitorarins/todoer
+  newName: eu.gcr.io/matrix-varins-1556713043069/vitorarins/todoer
+  newTag: 0.0.1

@@ -68,4 +68,30 @@ make run
 
 And the service will be available at port 8080.
 
-Here is an example of how to make a request to the service with cURL:
+### Deploy
+
+This application has a deploy strategy to a [Kubernetes](https://kubernetes.io/) cluster.
+It uses [Kustomize](https://kustomize.io/) for templating.
+You can write your own `kustomization.yaml` to a directory `deploy` with different variables like this:
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- github.com/vitorarins/todoer/deploy
+
+images:
+- name: vitorarins/todoer
+  newName: your-image-name
+  newTag: your-image-tag
+```
+
+And apply to your cluster by running: `kubectl apply -k deploy`.
+
+If you are using this repository you can change `kustomization.yaml` on the `deploy` directory and run:
+
+```
+make deploy
+```
+
+And the service will be available through a `LoadBalancer` type of Kubernetes Service.
