@@ -15,7 +15,7 @@ To run the automation provided here you need to have installed:
 
 It is recommended to just use the provided automation through make,
 it will help you achieve consistent results across different hosts
-and even different operational systems (it is also used on the CI).
+and even different operational systems.
 
 If you fancy building things (or running tests) with no extra layers
 you can install the latest [Go](https://golang.org/doc/install) and run
