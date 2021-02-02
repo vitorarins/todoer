@@ -1,11 +1,12 @@
 goversion=1.15.6
-grpcversion=1.0
+grpcuiversion=1.1.0
 short_sha=$(shell git rev-parse --short HEAD || echo latest)
 version?=$(short_sha)
 img=eu.gcr.io/matrix-varins-1556713043069/vitorarins/todoer:$(version)
 vols=-v `pwd`:/app -w /app
 run_go=docker run --rm $(vols) golang:$(goversion)
 run_pb=docker run --rm $(vols) vitorarins/grpc-go
+run_ui=docker run --rm $(vols) --entrypoint=/bin/grpcui fullstorydev/grpcui:v$(grpcuiversion)
 cov=coverage.out
 covhtml=coverage.html
 opts?=''
@@ -22,8 +23,8 @@ coverage: test
 	@$(run_go) go tool cover -html=$(cov) -o=$(covhtml)
 	@open $(covhtml) || xdg-open $(covhtml)
 
-.PHONY: generate-pb
-generate-pb:
+.PHONY: generate
+generate:
 	$(run_pb) protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative pb/todoer.proto
 
 .PHONY: image
@@ -45,3 +46,7 @@ build:
 .PHONY: deploy
 deploy: publish
 	kubectl apply -k deploy
+
+.PHONY: grpcui
+grpcui:
+	grpcui -proto pb/todoer.proto -plaintext 127.0.0.1:8080

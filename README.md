@@ -74,7 +74,7 @@ And the service will be available at port 8080.
 You can also specify the options:
 
 ```
-make run opts='-grpc -port 8000'
+make run opts='-grpc'
 ```
 
 ### Compiling a binary
@@ -94,6 +94,34 @@ Usage of ./cmd/todoer/todoer:
       run todoer service with grpc server
   -port int
       port where the service will be listening to (default 8080)
+```
+
+### Generating Protobuf and gRPC code
+
+You can change the `pb/todoer.proto` file and run:
+
+```
+make generate
+```
+
+It will generate `pb/todoer.pb.go` and `pb/todoer_grpc.pb.go` with the structs
+and functions to be used by the api server part of the code.
+
+### UI to check gRPC functions
+
+If you have [grpcui]() installed, you can test the exposed gRPC functions via
+user interface in your browser.
+
+First you will need to be running todoer service:
+
+```
+make run opts='-grpc'
+```
+
+Then in another shell session you can run:
+
+```
+make grpcui
 ```
 
 ## Deploy
