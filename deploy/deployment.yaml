@@ -16,7 +16,6 @@ spec:
       containers:
       - name: todoer
         image: vitorarins/todoer
-        command: ["/app/todoer","--grpc"]
         ports:
         - name: web
           containerPort: 8080

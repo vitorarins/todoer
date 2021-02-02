@@ -6,10 +6,9 @@ img=eu.gcr.io/matrix-varins-1556713043069/vitorarins/todoer:$(version)
 vols=-v `pwd`:/app -w /app
 run_go=docker run --rm $(vols) golang:$(goversion)
 run_pb=docker run --rm $(vols) vitorarins/grpc-go
-# run_pb=docker run --rm $(vols) grpc/go:$(grpcversion)
 cov=coverage.out
 covhtml=coverage.html
-
+opts?=''
 
 .PHONY: all
 all: test
@@ -33,7 +32,7 @@ image:
 
 .PHONY: run
 run: image
-	docker run -p 8080:8080 $(img)
+	docker run -p 8080:8080 $(img) $(opts)
 
 .PHONY: publish
 publish: image

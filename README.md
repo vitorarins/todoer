@@ -2,7 +2,10 @@
 
 Todoer is a service responsible for allowing clients to create TODO lists.
 
-The reference documentation for the API can be found [here](api.md).
+This service can also be served via [gRPC](https://grpc.io/).
+
+But the default option is to use [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) and [JSON](https://www.json.org/json-en.html) format.
+For wich the reference documentation can be found [here](api.md).
 
 ## Development
 
@@ -55,7 +58,7 @@ code used to build it, you can also specify an explicit version
 if you want:
 
 ```
-make image version=1.12.0
+make image version=0.0.1
 ```
 
 ### Running Locally
@@ -68,11 +71,37 @@ make run
 
 And the service will be available at port 8080.
 
-### Deploy
+You can also specify the options:
+
+```
+make run opts='-grpc -port 8000'
+```
+
+### Compiling a binary
+
+If you want to compile a binary for your host system and you have the `go` tool
+installed, you can compile your own binary by running:
+
+```
+make build
+```
+
+It will generate binary at `cmd/todoer/todoer` with the following options:
+
+```
+Usage of ./cmd/todoer/todoer:
+  -grpc
+      run todoer service with grpc server
+  -port int
+      port where the service will be listening to (default 8080)
+```
+
+## Deploy
 
 This application has a deploy strategy to a [Kubernetes](https://kubernetes.io/) cluster.
 It uses [Kustomize](https://kustomize.io/) for templating.
 You can write your own `kustomization.yaml` to a directory `deploy` with different variables like this:
+
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -91,7 +120,7 @@ And apply to your cluster by running: `kubectl apply -k deploy`.
 If you are using this repository you can change `kustomization.yaml` on the `deploy` directory and run:
 
 ```
-make deploy
+make deploy version=0.0.1
 ```
 
 And the service will be available through a `LoadBalancer` type of Kubernetes Service.

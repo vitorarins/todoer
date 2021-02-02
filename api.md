@@ -60,8 +60,7 @@ A `todolist` object is the list containing `todo`s.
 ```json
 {
     "id":    <int>,
-    "title": <string>,
-    "todos": [<todo>,...]
+    "title": <string>
 }
 ```
 
@@ -94,8 +93,7 @@ In case of success you can expect an status code 200/OK and the following respon
 ```json
 {
     "id":    <int>,
-    "title": <string>,
-    "todos": []
+    "title": <string>
 }
 ```
 
@@ -104,8 +102,7 @@ Example of response body:
 ```json
 {
     "id":    0,
-    "title": "Routine",
-    "todos": []
+    "title": "Routine"
 }
 ```
 
@@ -122,8 +119,7 @@ In case of success you can expect an status code 200/OK and the following respon
 ```json
 {
     "id":    <int>,
-    "title": <string>,
-    "todos": [<todo>,...]
+    "title": <string>
 }
 ```
 Example of response body:
@@ -131,18 +127,7 @@ Example of response body:
 ```json
 {
     "id":    0,
-    "title": "Routine",
-    "todos": [
-        {
-            "id":          0,
-            "list_id":     0,
-            "description": "Make the bed",
-            "comments":    "Will be easy",
-            "due_date":    "2021-02-01T00:00:01Z",
-            "labels":      ["bed", "bedroom"],
-            "done":        false
-        }
-    ]
+    "title": "Routine"
 }
 ```
 
@@ -170,33 +155,11 @@ Example of response body:
 [
     {
         "id":    0,
-        "title": "Routine",
-        "todos": [
-            {
-                "id":          0,
-                "list_id":     0,
-                "description": "Make the bed",
-                "comments":    "Will be easy",
-                "due_date":    "2021-02-01T00:00:01Z",
-                "labels":      ["bed", "bedroom"],
-                "done":        false
-            }
-        ]
+        "title": "Routine"
     },
     {
         "id":    1,
-        "title": "Work",
-        "todos": [
-            {
-                "id":          1,
-                "list_id":     1,
-                "description": "Type stuff",
-                "comments":    "Will be hard",
-                "due_date":    "2021-02-01T00:00:01Z",
-                "labels":      ["computer", "office"],
-                "done":        false
-            }
-        ]
+        "title": "Work"
     }
 ]
 ```
