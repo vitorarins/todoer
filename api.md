@@ -44,7 +44,7 @@ documented as optional.
 
 When a field has type "`<date>`" you can expect an string representation
 of date following the [RFC 3339](https://tools.ietf.org/html/rfc3339),
-for example: "2018-01-01T00:00:01Z".
+for example: "2021-01-01T00:00:01Z".
 
 
 ## Error Handling
@@ -244,7 +244,7 @@ With the following request body:
 ```json
 {
     "description": <string>,
-    "done":        <boolean>,
+    "done":        <boolean>(optional),
     "comments":    <string>(optional),
     "due_date":    <date>(optional),
     "labels":      [<string>,...](optional)
@@ -256,7 +256,7 @@ Example of request body:
 ```json
 {
     "description": "Make the bed",
-    "done":        false
+    "done":        false,
     "comments":    "Will be easy",
     "due_date":    "2021-02-01T00:00:01Z",
     "labels":      ["bed", "bedroom"],
@@ -284,7 +284,7 @@ Example of response body:
     "id":          0,
     "list_id":     0,
     "description": "Make the bed",
-    "done":        false
+    "done":        false,
     "comments":    "Will be easy",
     "due_date":    "2021-02-01T00:00:01Z",
     "labels":      ["bed", "bedroom"]
@@ -319,7 +319,7 @@ Example of response body:
     "id":          0,
     "list_id":     0,
     "description": "Make the bed",
-    "done":        false
+    "done":        false,
     "comments":    "Will be easy",
     "due_date":    "2021-02-01T00:00:01Z",
     "labels":      ["bed", "bedroom"]
@@ -381,7 +381,7 @@ With the following request body:
 ```json
 {
     "description": <string>,
-    "done":        <boolean>,
+    "done":        <boolean>(optional),
     "comments":    <string>(optional),
     "due_date":    <date>(optional),
     "labels":      [<string>,...](optional)
