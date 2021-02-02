@@ -12,7 +12,7 @@
 
 Todoer is a service responsible for allowing clients to create TODO lists.
 
-This service is served usin [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) and [JSON](https://www.json.org/json-en.html) format via HTTP.
+This service is served using [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) and [JSON](https://www.json.org/json-en.html) format via HTTP.
 For which the reference documentation can be found [here](api.md).
 
 But it can also be served via [gRPC](https://grpc.io/).
