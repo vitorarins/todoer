@@ -274,7 +274,7 @@ Example of Go request object:
 ```go
 CreateTodoRequest{
     ListId:      0,
-    Description: "Make the bed."
+    Description: "Make the bed.",
     Comments:    "Will be easy",
     DueDate:     "2021-01-01T00:00:01Z",
     Labels:      []string{"bed", "bedroom"},
@@ -297,7 +297,7 @@ CreateTodoReply{
     Todo: Todo{
         Id:          0,
         ListId:      0,
-        Description: "Make the bed."
+        Description: "Make the bed.",
         Comments:    "Will be easy",
         DueDate:     "2021-01-01T00:00:01Z",
         Labels:      []string{"bed", "bedroom"},
@@ -345,7 +345,7 @@ GetTodoReply{
     Todo: Todo{
         Id:          0,
         ListId:      0,
-        Description: "Make the bed."
+        Description: "Make the bed.",
         Comments:    "Will be easy",
         DueDate:     "2021-01-01T00:00:01Z",
         Labels:      []string{"bed", "bedroom"},
@@ -394,7 +394,7 @@ GetTodosByListReply{
         Todo{
             Id:          0,
             ListId:      0,
-            Description: "Make the bed."
+            Description: "Make the bed.",
             Comments:    "Will be easy",
             DueDate:     "2021-01-01T00:00:01Z",
             Labels:      []string{"bed", "bedroom"},
@@ -403,7 +403,7 @@ GetTodosByListReply{
         Todo{
             Id:          1,
             ListId:      0,
-            Description: "Wash the dishes."
+            Description: "Wash the dishes.",
             Comments:    "Will be hard",
             DueDate:     "2021-01-03T00:00:01Z",
             Labels:      []string{"sink", "kitchen"},
@@ -436,7 +436,7 @@ UpdateTodoRequest{
     Todo: Todo{
         Id:          0,
         ListId:      0,
-        Description: "Make the bed."
+        Description: "Make the bed.",
         Comments:    "Was easy",
         DueDate:     "2021-01-01T00:00:01Z",
         Labels:      []string{"bed", "bedroom"},
