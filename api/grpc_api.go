@@ -11,6 +11,10 @@ import (
 	"github.com/vitorarins/todoer/repository"
 )
 
+const (
+	dateLayout = time.RFC3339
+)
+
 var (
 	ErrInvalidDueDate = errors.New("due_date is invalid")
 )
@@ -270,7 +274,7 @@ func fromProtoTodo(pt *pb.Todo) (repository.Todo, error) {
 	}
 
 	if pt.DueDate != "" {
-		dueDate, err := time.Parse(time.RFC3339, pt.DueDate)
+		dueDate, err := time.Parse(dateLayout, pt.DueDate)
 		if err != nil {
 			return repository.Todo{}, ErrInvalidDueDate
 		}
@@ -294,7 +298,7 @@ func toProtoTodo(todo repository.Todo) *pb.Todo {
 		Description: todo.Description,
 		Comments:    todo.Comments,
 		Labels:      todo.Labels,
-		DueDate:     todo.DueDate.String(),
+		DueDate:     todo.DueDate.Format(dateLayout),
 		Done:        todo.Done,
 	}
 }

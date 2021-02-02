@@ -328,7 +328,7 @@ func TestTodoGrpcApiCreation(t *testing.T) {
 				Todo: &pb.Todo{
 					Id:          1,
 					Description: "Routine",
-					DueDate:     "2021-01-01 00:00:00 +0000 UTC",
+					DueDate:     "2021-01-01T00:00:00Z",
 				},
 			},
 		},
@@ -405,7 +405,7 @@ func TestTodoGrpcApiGetTodosByList(t *testing.T) {
 					&pb.Todo{
 						Id:          1,
 						Description: "Make the bed",
-						DueDate:     "0001-01-01 00:00:00 +0000 UTC",
+						DueDate:     "0001-01-01T00:00:00Z",
 					},
 				},
 			},
@@ -466,7 +466,7 @@ func TestTodoGrpcApiGetByID(t *testing.T) {
 				Todo: &pb.Todo{
 					Id:          1,
 					Description: "Make the bed",
-					DueDate:     "0001-01-01 00:00:00 +0000 UTC",
+					DueDate:     "0001-01-01T00:00:00Z",
 				},
 			},
 		},

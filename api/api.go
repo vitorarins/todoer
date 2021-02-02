@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -16,7 +15,6 @@ import (
 )
 
 const (
-	dateLayout     = time.RFC3339
 	TodoListPath   = "/todolist"
 	TodoListIDPath = TodoListPath + "/{id}"
 	TodoPath       = TodoListPath + "/{list_id}/todo"
