@@ -5,7 +5,7 @@ Todoer is a service responsible for allowing clients to create TODO lists.
 This service can also be served via [gRPC](https://grpc.io/).
 
 But the default option is to use [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) and [JSON](https://www.json.org/json-en.html) format.
-For wich the reference documentation can be found [here](api.md).
+For which the reference documentation can be found [here](api.md).
 
 ## Development
 
