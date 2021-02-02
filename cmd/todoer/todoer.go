@@ -36,6 +36,8 @@ func main() {
 		}
 		server := grpc.NewServer()
 		pb.RegisterTodoerServer(server, grpcApi)
+
+		log.Infof("running todoer service over grpc, listening on port %d", port)
 		log.Fatal(server.Serve(lis))
 	} else {
 		restApi := api.NewApi(repo)
@@ -48,6 +50,7 @@ func main() {
 			WriteTimeout: timeout,
 		}
 
+		log.Infof("running todoer service, listening on port %d", port)
 		log.Fatal(server.ListenAndServe())
 	}
 }
