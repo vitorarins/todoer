@@ -1,5 +1,20 @@
 # Todoer API
 
+- [Core Concepts](#core-concepts)
+- [Error Handling](#error-handling)
+- [Todo List](#todo-list)
+    - [Creating a todo list](#creating-a-todo-list)
+    - [Retrieving a todo list](#retrieving-a-todo-list)
+    - [Retrieving all todo lists](#retrieving-all-todo-lists)
+    - [Updating a todo list](#updating-a-todo-list)
+    - [Deleting a todo list](#deleting-a-todo-list)
+- [Todo](#todo)
+    - [Creating a todo](#creating-a-todo)
+    - [Retrieving a todo](#retrieving-a-todo)
+    - [Retrieving all todo's from a todo list](#retrieving-all-todos-from-a-todo-list)
+    - [Updating a todo](#updating-a-todo)
+    - [Deleting a todo](#deleting-a-todo)
+
 The todoer API provides services related to todos, like
 creating todo lists.
 
@@ -27,7 +42,7 @@ All JSON fields documented as part of request/response bodies are
 to be considered obligatory, unless they are explicitly
 documented as optional.
 
-When a field has type "<date>" you can expect an string representation
+When a field has type "`<date>`" you can expect an string representation
 of date following the [RFC 3339](https://tools.ietf.org/html/rfc3339),
 for example: "2018-01-01T00:00:01Z".
 
