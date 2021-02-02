@@ -16,7 +16,6 @@ var (
 type TodoList struct {
 	ID    uint32 `json:"id"`
 	Title string `json:"title"`
-	Todos []Todo `json:"todos"`
 }
 
 type Todo struct {
