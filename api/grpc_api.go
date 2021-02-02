@@ -11,14 +11,6 @@ import (
 	"github.com/vitorarins/todoer/repository"
 )
 
-const (
-	dateLayout = time.RFC3339
-)
-
-var (
-	ErrInvalidDueDate = errors.New("due_date is invalid")
-)
-
 type GrpcApi struct {
 	repo repository.Repository
 	pb.UnimplementedTodoerServer
@@ -262,6 +254,13 @@ func fromProtoTodoList(ptl *pb.TodoList) repository.TodoList {
 	}
 }
 
+func toProtoTodoList(tl repository.TodoList) *pb.TodoList {
+	return &pb.TodoList{
+		Id:    tl.ID,
+		Title: tl.Title,
+	}
+}
+
 func fromProtoTodo(pt *pb.Todo) (repository.Todo, error) {
 
 	todo := repository.Todo{
@@ -284,21 +283,19 @@ func fromProtoTodo(pt *pb.Todo) (repository.Todo, error) {
 	return todo, nil
 }
 
-func toProtoTodoList(tl repository.TodoList) *pb.TodoList {
-	return &pb.TodoList{
-		Id:    tl.ID,
-		Title: tl.Title,
-	}
-}
-
 func toProtoTodo(todo repository.Todo) *pb.Todo {
-	return &pb.Todo{
+	protoTodo := &pb.Todo{
 		Id:          todo.ID,
 		ListId:      todo.ListID,
 		Description: todo.Description,
 		Comments:    todo.Comments,
 		Labels:      todo.Labels,
-		DueDate:     todo.DueDate.Format(dateLayout),
 		Done:        todo.Done,
 	}
+
+	if !todo.DueDate.IsZero() {
+		protoTodo.DueDate = todo.DueDate.Format(dateLayout)
+	}
+
+	return protoTodo
 }

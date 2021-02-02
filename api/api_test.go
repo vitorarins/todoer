@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/vitorarins/todoer/repository"
@@ -23,7 +24,7 @@ func TestTodoListCreation(t *testing.T) {
 		injectResponse repository.TodoList
 		injectErr      error
 		wantStatusCode int
-		want           repository.TodoList
+		want           TodoListTransport
 	}
 
 	tests := []Test{
@@ -34,7 +35,7 @@ func TestTodoListCreation(t *testing.T) {
 				ID:    1,
 				Title: "Routine",
 			},
-			want: repository.TodoList{
+			want: TodoListTransport{
 				ID:    1,
 				Title: "Routine",
 			},
@@ -111,7 +112,7 @@ func TestTodoListCreation(t *testing.T) {
 				return
 			}
 
-			got := repository.TodoList{}
+			got := TodoListTransport{}
 			helperFromJSON(t, res.Body, &got)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
@@ -129,7 +130,7 @@ func TestTodoListGetAll(t *testing.T) {
 		injectResponse []repository.TodoList
 		injectErr      error
 		wantStatusCode int
-		want           []repository.TodoList
+		want           []TodoListTransport
 	}
 
 	tests := []Test{
@@ -141,8 +142,8 @@ func TestTodoListGetAll(t *testing.T) {
 					Title: "Routine",
 				},
 			},
-			want: []repository.TodoList{
-				repository.TodoList{
+			want: []TodoListTransport{
+				TodoListTransport{
 					ID:    1,
 					Title: "Routine",
 				},
@@ -202,7 +203,7 @@ func TestTodoListGetAll(t *testing.T) {
 				return
 			}
 
-			got := []repository.TodoList{}
+			got := []TodoListTransport{}
 			helperFromJSON(t, res.Body, &got)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
@@ -221,7 +222,7 @@ func TestTodoListGetByID(t *testing.T) {
 		injectResponse repository.TodoList
 		injectErr      error
 		wantStatusCode int
-		want           repository.TodoList
+		want           TodoListTransport
 	}
 
 	tests := []Test{
@@ -231,7 +232,7 @@ func TestTodoListGetByID(t *testing.T) {
 				ID:    1,
 				Title: "Routine",
 			},
-			want: repository.TodoList{
+			want: TodoListTransport{
 				ID:    1,
 				Title: "Routine",
 			},
@@ -304,7 +305,7 @@ func TestTodoListGetByID(t *testing.T) {
 				return
 			}
 
-			got := repository.TodoList{}
+			got := TodoListTransport{}
 			helperFromJSON(t, res.Body, &got)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
@@ -514,7 +515,7 @@ func TestTodoCreation(t *testing.T) {
 		injectResponse repository.Todo
 		injectErr      error
 		wantStatusCode int
-		want           repository.Todo
+		want           TodoTransport
 	}
 
 	tests := []Test{
@@ -525,11 +526,21 @@ func TestTodoCreation(t *testing.T) {
 				ID:          1,
 				Description: "Make the bed",
 			},
-			want: repository.Todo{
+			want: TodoTransport{
 				ID:          1,
 				Description: "Make the bed",
 			},
 			wantStatusCode: http.StatusOK,
+		},
+		{
+			name: "BadRequestWhenDueDateInvalid",
+			requestBody: helperToJSON(t, TodoTransport{
+				Description: "Make the bed",
+				Comments:    "really hard",
+				DueDate:     "11010101",
+				Done:        true,
+			}),
+			wantStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:           "MethodNotAllowedForDelete",
@@ -618,7 +629,7 @@ func TestTodoCreation(t *testing.T) {
 				return
 			}
 
-			got := repository.Todo{}
+			got := TodoTransport{}
 			helperFromJSON(t, res.Body, &got)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
@@ -637,7 +648,7 @@ func TestTodosGetByListID(t *testing.T) {
 		injectResponse []repository.Todo
 		injectErr      error
 		wantStatusCode int
-		want           []repository.Todo
+		want           []TodoTransport
 	}
 
 	tests := []Test{
@@ -650,8 +661,8 @@ func TestTodosGetByListID(t *testing.T) {
 					Description: "Make the bed",
 				},
 			},
-			want: []repository.Todo{
-				repository.Todo{
+			want: []TodoTransport{
+				TodoTransport{
 					ID:          1,
 					ListID:      0,
 					Description: "Make the bed",
@@ -721,7 +732,7 @@ func TestTodosGetByListID(t *testing.T) {
 				return
 			}
 
-			got := []repository.Todo{}
+			got := []TodoTransport{}
 			helperFromJSON(t, res.Body, &got)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
@@ -740,7 +751,7 @@ func TestTodoGetByID(t *testing.T) {
 		injectResponse repository.Todo
 		injectErr      error
 		wantStatusCode int
-		want           repository.Todo
+		want           TodoTransport
 	}
 
 	tests := []Test{
@@ -750,11 +761,13 @@ func TestTodoGetByID(t *testing.T) {
 				ID:          1,
 				ListID:      0,
 				Description: "Make the bed",
+				DueDate:     parseTime(t, "2021-02-04T00:00:00Z"),
 			},
-			want: repository.Todo{
+			want: TodoTransport{
 				ID:          1,
 				ListID:      0,
 				Description: "Make the bed",
+				DueDate:     "2021-02-04T00:00:00Z",
 			},
 			wantStatusCode: http.StatusOK,
 		},
@@ -825,7 +838,7 @@ func TestTodoGetByID(t *testing.T) {
 				return
 			}
 
-			got := repository.Todo{}
+			got := TodoTransport{}
 			helperFromJSON(t, res.Body, &got)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
@@ -852,6 +865,16 @@ func TestTodoUpdate(t *testing.T) {
 			name:           "SuccessUpdatingTodo",
 			requestBody:    validTodoRequestBody(t),
 			wantStatusCode: http.StatusOK,
+		},
+		{
+			name: "BadRequestWhenDueDateInvalid",
+			requestBody: helperToJSON(t, TodoTransport{
+				Description: "Make the bed",
+				Comments:    "really hard",
+				DueDate:     "11010101",
+				Done:        true,
+			}),
+			wantStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:           "BadRequestWrongIDPath",
@@ -1127,13 +1150,26 @@ func newRequest(t *testing.T, method string, url string, body []byte) *http.Requ
 }
 
 func validTodoListRequestBody(t *testing.T) []byte {
-	return helperToJSON(t, repository.TodoList{
+	return helperToJSON(t, TodoListTransport{
 		Title: "Routine",
 	})
 }
 
 func validTodoRequestBody(t *testing.T) []byte {
-	return helperToJSON(t, repository.Todo{
+	return helperToJSON(t, TodoTransport{
 		Description: "Make the bed",
+		Comments:    "really hard",
+		DueDate:     "2021-02-04T00:00:00Z",
+		Labels:      []string{"bed", "bedroom"},
+		Done:        true,
 	})
+}
+
+func parseTime(t *testing.T, s string) time.Time {
+	t.Helper()
+	v, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return v
 }

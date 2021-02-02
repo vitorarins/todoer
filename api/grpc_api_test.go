@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -405,7 +404,6 @@ func TestTodoGrpcApiGetTodosByList(t *testing.T) {
 					&pb.Todo{
 						Id:          1,
 						Description: "Make the bed",
-						DueDate:     "0001-01-01T00:00:00Z",
 					},
 				},
 			},
@@ -466,7 +464,6 @@ func TestTodoGrpcApiGetByID(t *testing.T) {
 				Todo: &pb.Todo{
 					Id:          1,
 					Description: "Make the bed",
-					DueDate:     "0001-01-01T00:00:00Z",
 				},
 			},
 		},
@@ -622,13 +619,4 @@ func validDeleteTodoRequest(t *testing.T) *pb.DeleteTodoRequest {
 	return &pb.DeleteTodoRequest{
 		Id: 0,
 	}
-}
-
-func parseTime(t *testing.T, s string) time.Time {
-	t.Helper()
-	v, err := time.Parse(time.RFC3339, s)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return v
 }

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -15,11 +16,31 @@ import (
 )
 
 const (
+	dateLayout     = time.RFC3339
 	TodoListPath   = "/todolist"
 	TodoListIDPath = TodoListPath + "/{id}"
 	TodoPath       = TodoListPath + "/{list_id}/todo"
 	TodoIDPath     = TodoPath + "/{id}"
 )
+
+var (
+	ErrInvalidDueDate = errors.New("due_date is invalid")
+)
+
+type TodoListTransport struct {
+	ID    uint32 `json:"id"`
+	Title string `json:"title"`
+}
+
+type TodoTransport struct {
+	ID          uint32   `json:"id"`
+	ListID      uint32   `json:"list_id"`
+	Description string   `json:"description"`
+	Comments    string   `json:"comments"`
+	DueDate     string   `json:"due_date"`
+	Labels      []string `json:"labels"`
+	Done        bool     `json:"done"`
+}
 
 type Error struct {
 	Message string `json:"message"`
@@ -72,7 +93,7 @@ func (a *Api) CreateTodoList(res http.ResponseWriter, req *http.Request) {
 	logger := log.WithFields(log.Fields{"action": "CreateTodoList"})
 
 	dec := json.NewDecoder(req.Body)
-	todoListReq := repository.TodoList{}
+	todoListReq := TodoListTransport{}
 
 	err := dec.Decode(&todoListReq)
 	if err != nil {
@@ -83,7 +104,7 @@ func (a *Api) CreateTodoList(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newTodoList, err := a.repo.InsertTodoList(todoListReq)
+	newTodoList, err := a.repo.InsertTodoList(fromTransportToTodoList(todoListReq))
 	if err != nil {
 		if errors.Is(err, repository.ErrEmptyTitle) {
 			res.WriteHeader(http.StatusBadRequest)
@@ -97,8 +118,9 @@ func (a *Api) CreateTodoList(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	todoListRes := toTransportTodoList(*newTodoList)
 	res.WriteHeader(http.StatusOK)
-	logResponseBodyWrite(logger, res, toJSON(logger, newTodoList))
+	logResponseBodyWrite(logger, res, toJSON(logger, todoListRes))
 }
 
 func (a *Api) GetAllTodoLists(res http.ResponseWriter, req *http.Request) {
@@ -112,8 +134,13 @@ func (a *Api) GetAllTodoLists(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	todoListsRes := []TodoListTransport{}
+	for _, tl := range todoLists {
+		todoListsRes = append(todoListsRes, toTransportTodoList(tl))
+	}
+
 	res.WriteHeader(http.StatusOK)
-	logResponseBodyWrite(logger, res, toJSON(logger, todoLists))
+	logResponseBodyWrite(logger, res, toJSON(logger, todoListsRes))
 }
 
 func (a *Api) TodoListByID(res http.ResponseWriter, req *http.Request) {
@@ -160,15 +187,16 @@ func (a *Api) GetTodoList(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	todoListRes := toTransportTodoList(*todoList)
 	res.WriteHeader(http.StatusOK)
-	logResponseBodyWrite(logger, res, toJSON(logger, todoList))
+	logResponseBodyWrite(logger, res, toJSON(logger, todoListRes))
 }
 
 func (a *Api) UpdateTodoList(res http.ResponseWriter, req *http.Request) {
 	logger := log.WithFields(log.Fields{"action": "UpdateTodoList"})
 
 	dec := json.NewDecoder(req.Body)
-	todoListReq := repository.TodoList{}
+	todoListReq := TodoListTransport{}
 
 	err := dec.Decode(&todoListReq)
 	if err != nil {
@@ -187,7 +215,7 @@ func (a *Api) UpdateTodoList(res http.ResponseWriter, req *http.Request) {
 	}
 	todoListReq.ID = uint32(id)
 
-	err = a.repo.UpdateTodoList(todoListReq)
+	err = a.repo.UpdateTodoList(fromTransportToTodoList(todoListReq))
 	if err != nil {
 		if errors.Is(err, repository.ErrEmptyTitle) {
 			res.WriteHeader(http.StatusBadRequest)
@@ -263,7 +291,7 @@ func (a *Api) CreateTodo(res http.ResponseWriter, req *http.Request) {
 	logger := log.WithFields(log.Fields{"action": "CreateTodo"})
 
 	dec := json.NewDecoder(req.Body)
-	todoReq := repository.Todo{}
+	todoReq := TodoTransport{}
 
 	err := dec.Decode(&todoReq)
 	if err != nil {
@@ -282,7 +310,15 @@ func (a *Api) CreateTodo(res http.ResponseWriter, req *http.Request) {
 	}
 	todoReq.ListID = uint32(listID)
 
-	newTodo, err := a.repo.InsertTodo(todoReq)
+	todoForInsert, err := fromTransportToTodo(todoReq)
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		logResponseBodyWrite(logger, res, newErrorResponse(logger, err.Error()))
+		logger.WithError(err).Warning("bad request error")
+		return
+	}
+
+	newTodo, err := a.repo.InsertTodo(todoForInsert)
 	if err != nil {
 		if errors.Is(err, repository.ErrEmptyDescription) {
 			res.WriteHeader(http.StatusBadRequest)
@@ -302,8 +338,9 @@ func (a *Api) CreateTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	todoRes := toTransportTodo(*newTodo)
 	res.WriteHeader(http.StatusOK)
-	logResponseBodyWrite(logger, res, toJSON(logger, newTodo))
+	logResponseBodyWrite(logger, res, toJSON(logger, todoRes))
 }
 
 func (a *Api) GetTodosByList(res http.ResponseWriter, req *http.Request) {
@@ -324,8 +361,13 @@ func (a *Api) GetTodosByList(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	todosRes := []TodoTransport{}
+	for _, t := range todos {
+		todosRes = append(todosRes, toTransportTodo(t))
+	}
+
 	res.WriteHeader(http.StatusOK)
-	logResponseBodyWrite(logger, res, toJSON(logger, todos))
+	logResponseBodyWrite(logger, res, toJSON(logger, todosRes))
 }
 
 func (a *Api) TodoByID(res http.ResponseWriter, req *http.Request) {
@@ -372,15 +414,16 @@ func (a *Api) GetTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	todoRes := toTransportTodo(*todo)
 	res.WriteHeader(http.StatusOK)
-	logResponseBodyWrite(logger, res, toJSON(logger, todo))
+	logResponseBodyWrite(logger, res, toJSON(logger, todoRes))
 }
 
 func (a *Api) UpdateTodo(res http.ResponseWriter, req *http.Request) {
 	logger := log.WithFields(log.Fields{"action": "UpdateTodo"})
 
 	dec := json.NewDecoder(req.Body)
-	todoReq := repository.Todo{}
+	todoReq := TodoTransport{}
 
 	err := dec.Decode(&todoReq)
 	if err != nil {
@@ -399,7 +442,15 @@ func (a *Api) UpdateTodo(res http.ResponseWriter, req *http.Request) {
 	}
 	todoReq.ID = uint32(id)
 
-	err = a.repo.UpdateTodo(todoReq)
+	todoForUpdate, err := fromTransportToTodo(todoReq)
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		logResponseBodyWrite(logger, res, newErrorResponse(logger, err.Error()))
+		logger.WithError(err).Warning("bad request error")
+		return
+	}
+
+	err = a.repo.UpdateTodo(todoForUpdate)
 	if err != nil {
 		if errors.Is(err, repository.ErrEmptyDescription) {
 			res.WriteHeader(http.StatusBadRequest)
@@ -439,11 +490,12 @@ func (a *Api) DeleteTodo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	todoReq := repository.Todo{
+	todoForDelete := repository.Todo{
 		ID:     uint32(id),
 		ListID: uint32(listID),
 	}
-	err = a.repo.DeleteTodo(todoReq)
+
+	err = a.repo.DeleteTodo(todoForDelete)
 	if err != nil {
 		if errors.Is(err, repository.ErrTodoListNotFound) {
 			res.WriteHeader(http.StatusNotFound)
@@ -493,4 +545,56 @@ func handleFieldParsingError(logger *log.Entry, res http.ResponseWriter, fieldNa
 	res.WriteHeader(http.StatusBadRequest)
 	logResponseBodyWrite(logger, res, newErrorResponse(logger, msg))
 	logger.WithError(err).WithFields(log.Fields{"field": fieldName}).Warning("invalid field on request")
+}
+
+func fromTransportToTodoList(ttl TodoListTransport) repository.TodoList {
+	return repository.TodoList{
+		ID:    ttl.ID,
+		Title: ttl.Title,
+	}
+}
+
+func toTransportTodoList(tl repository.TodoList) TodoListTransport {
+	return TodoListTransport{
+		ID:    tl.ID,
+		Title: tl.Title,
+	}
+}
+
+func fromTransportToTodo(tt TodoTransport) (repository.Todo, error) {
+	todo := repository.Todo{
+		ID:          tt.ID,
+		ListID:      tt.ListID,
+		Description: tt.Description,
+		Comments:    tt.Comments,
+		Labels:      tt.Labels,
+		Done:        tt.Done,
+	}
+
+	if tt.DueDate != "" {
+		dueDate, err := time.Parse(dateLayout, tt.DueDate)
+		if err != nil {
+			return repository.Todo{}, ErrInvalidDueDate
+		}
+		todo.DueDate = dueDate
+	}
+
+	return todo, nil
+}
+
+func toTransportTodo(t repository.Todo) TodoTransport {
+	todoTransport := TodoTransport{
+		ID:          t.ID,
+		ListID:      t.ListID,
+		Description: t.Description,
+		Comments:    t.Comments,
+		Labels:      t.Labels,
+		Done:        t.Done,
+	}
+
+	if !t.DueDate.IsZero() {
+		todoTransport.DueDate = t.DueDate.Format(dateLayout)
+	}
+
+	return todoTransport
 }

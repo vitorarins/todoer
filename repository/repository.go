@@ -14,18 +14,18 @@ var (
 )
 
 type TodoList struct {
-	ID    uint32 `json:"id"`
-	Title string `json:"title"`
+	ID    uint32
+	Title string
 }
 
 type Todo struct {
-	ID          uint32    `json:"id"`
-	ListID      uint32    `json:"list_id"`
-	Description string    `json:"description"`
-	Comments    string    `json:"comments"`
-	DueDate     time.Time `json:"due_date"`
-	Labels      []string  `json:"labels"`
-	Done        bool      `json:"done"`
+	ID          uint32
+	ListID      uint32
+	Description string
+	Comments    string
+	DueDate     time.Time
+	Labels      []string
+	Done        bool
 }
 
 type Repository interface {
