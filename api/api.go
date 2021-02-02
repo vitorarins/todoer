@@ -292,6 +292,12 @@ func (a *Api) CreateTodo(res http.ResponseWriter, req *http.Request) {
 			logger.WithError(err).Warning("bad request error")
 			return
 		}
+		if errors.Is(err, repository.ErrTodoListNotFound) {
+			res.WriteHeader(http.StatusNotFound)
+			logResponseBodyWrite(logger, res, newErrorResponse(logger, err.Error()))
+			logger.WithError(err).Warning("not found error")
+			return
+		}
 		res.WriteHeader(http.StatusInternalServerError)
 		logResponseBodyWrite(logger, res, newErrorResponse(logger, "internal server error"))
 		logger.WithError(err).Error("internal server error")

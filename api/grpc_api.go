@@ -150,7 +150,9 @@ func (ga *GrpcApi) CreateTodo(ctx context.Context, req *pb.CreateTodoRequest) (*
 
 	newTodo, err := ga.repo.InsertTodo(todoReq)
 	if err != nil {
-		if errors.Is(err, repository.ErrEmptyDescription) {
+		if errors.Is(err, repository.ErrEmptyDescription) ||
+			errors.Is(err, repository.ErrTodoListNotFound) {
+
 			logger.WithError(err).Warning("bad request error")
 			return nil, err
 		}

@@ -550,6 +550,12 @@ func TestTodoCreation(t *testing.T) {
 			wantStatusCode: http.StatusBadRequest,
 		},
 		{
+			name:           "NotFoundIfRepoInsertReturnsErrTodoListNotFound",
+			requestBody:    validTodoRequestBody(t),
+			injectErr:      repository.ErrTodoListNotFound,
+			wantStatusCode: http.StatusNotFound,
+		},
+		{
 			name:           "BadRequestIfRequestBodyIsEmpty",
 			requestBody:    []byte{},
 			wantStatusCode: http.StatusBadRequest,
