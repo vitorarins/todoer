@@ -1,5 +1,15 @@
 # Todoer
 
+- [Development](#development)
+    - [Dependencies](#dependencies)
+    - [Running tests](#running-tests)
+    - [Releasing](#releasing)
+    - [Running Locally](#running-locally)
+    - [Compiling a binary](#compiling-a-binary)
+    - [Generating Protobuf and gRPC code](#generating-protobuf-and-grpc-code)
+    - [UI to check gRPC functions](#ui-to-check-grpc-functions)
+- [Deploy](#deploy)
+
 Todoer is a service responsible for allowing clients to create TODO lists.
 
 This service can also be served via [gRPC](https://grpc.io/).
