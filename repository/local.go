@@ -68,6 +68,7 @@ func (ls *LocalStorage) DeleteTodoListByID(id uint32) error {
 	}
 
 	delete(ls.TodoListTable, id)
+	delete(ls.TodoListRelationship, id)
 	return nil
 }
 
